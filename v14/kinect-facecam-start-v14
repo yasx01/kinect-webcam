@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+# OBS modu: Kinect -> /dev/video20 akisini arka planda baslatir.
+# v14: kopru betigi bu dosyanin yanindan bulunur (AppImage icinde de calisir);
+#      Tarayici modu calisiyorsa baslamaz (#2); arka planda sudo yok,
+#      modul gerekirse yalnizca pkexec ile yuklenir (#7).
+set -uo pipefail
+
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BRIDGE="$HERE/kinect-facecam-bridge-v14.py"
+PIDFILE="/tmp/kinect-facecam.pid"
+LOGFILE="/tmp/kinect-facecam.log"
+PW_PIDFILE="/tmp/kinect-facecam-pw.pid"
+
+notify() {
+    command -v notify-send &>/dev/null && notify-send "Kinect Webcam" "$1"
+    echo "$1"
+}
+
+if [ -f "$PIDFILE" ] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null; then
+    notify "Zaten calisiyor (PID $(cat "$PIDFILE"))."
+    exit 0
+fi
+
+# Kinect ayni anda tek programa hizmet verir (LIBUSB_ERROR_BUSY).
+if { [ -f "$PW_PIDFILE" ] && kill -0 "$(cat "$PW_PIDFILE")" 2>/dev/null; } \
+    || pgrep -f 'kinect-facecam-bridge-pipewire' > /dev/null; then
+    notify "Tarayici modu calisiyor. Kinect'i iki mod birden kullanamaz; once onu durdur."
+    exit 1
+fi
+if pgrep -f 'kinect-facecam-bridge(-v[0-9]+)?\.py' > /dev/null; then
+    notify "Baska bir OBS modu koprusu zaten calisiyor (PID dosyasi olmadan baslatilmis)."
+    exit 1
+fi
+
+if ! lsmod | grep -q '^v4l2loopback'; then
+    notify "v4l2loopback modulu yukleniyor, sifre penceresi acilabilir..."
+    if ! pkexec modprobe v4l2loopback; then
+        notify "v4l2loopback yuklenemedi. Terminalde: sudo modprobe v4l2loopback"
+        exit 1
+    fi
+    sleep 1
+fi
+
+if [ ! -e /dev/video20 ]; then
+    notify "/dev/video20 yok. Sanal kamera ayari (modprobe.d) kurulu mu?"
+    exit 1
+fi
+
+rm -f "$LOGFILE"
+cd "$HOME" || exit 1
+setsid /usr/bin/python3 -I "$BRIDGE" > "$LOGFILE" 2>&1 < /dev/null &
+echo $! > "$PIDFILE"
+
+sleep 2
+if kill -0 "$(cat "$PIDFILE")" 2>/dev/null; then
+    notify "Kinect akisi basladi (/dev/video20). OBS'de 'Kinect360 Facecam' secilebilir."
+else
+    notify "Baslatilamadi. Log: $LOGFILE"
+    exit 1
+fi

@@ -1,0 +1,5 @@
+UACFirmware Microsoft Kinect SDK Beta 2 kökenli kapalı kaynak firmware'dir.
+Bu projeye ait değildir; projenin açık kaynak lisansı bu dosyaya uygulanmaz.
+Önceki incelemede SDK lisansında yeniden dağıtım kısıtı görülmüştür.
+Bu pakette bulunması Microsoft tarafından dağıtım izni verildiği anlamına gelmez.
+SDK/MSI veya Windows sürücüsü bu pakete eklenmemiştir.

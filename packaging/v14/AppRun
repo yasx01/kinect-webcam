@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -euo pipefail
+HERE="$(dirname "$(readlink -f "$0")")"
+SETUP="$HERE/usr/bin/kinect-facecam-setup-v14.py"
+if ! /usr/bin/python3 -I -c 'import PyQt6.QtWidgets' 2>/dev/null; then
+    if ! command -v kdialog >/dev/null || ! command -v konsole >/dev/null; then
+        echo 'Fedora KDE ve ilk kurulum için kdialog/konsole gereklidir.' >&2
+        exit 1
+    fi
+    if [ -x /usr/bin/python3 ]; then
+        if ! PLAN=$(/usr/bin/python3 -I "$SETUP" --plan 2>&1); then
+            kdialog --error "$PLAN"
+            exit 1
+        fi
+    else
+        if ! grep -qE '^ID=(fedora|"fedora")$' /etc/os-release || [ "$(uname -m)" != x86_64 ]; then
+            kdialog --error 'İlk kurulum yalnızca Fedora x86_64 içindir.'
+            exit 1
+        fi
+        PLAN="Önce Python 3, ardından PyQt6, libfreenect, FFmpeg, GStreamer/PipeWire,
+OBS ve sanal kamera paketleri kurulacak. Gerekirse RPM Fusion Free etkinleştirilecek.
+Mikrofon firmware’i, USB izinleri ve otomatik yükleme kuralı kurulacak.
+Değişen dosyalar /var/backups/kinect-facecam altında yedeklenecek.
+İnternet ve yönetici onayı gerekir; kısmi hatada kurulan paketler otomatik kaldırılmaz."
+    fi
+    kdialog --title 'Kinect Webcam · İlk kurulum' --yesno "PyQt6 henüz kurulu değil.
+
+$PLAN
+
+Yönetici onayıyla ilk kurulum başlatılsın mı?" || exit 0
+    konsole --nofork -e /bin/bash "$HERE/usr/bin/kinect-facecam-bootstrap-v14" "$SETUP"
+    if ! /usr/bin/python3 -I -c 'import PyQt6.QtWidgets' 2>/dev/null; then
+        kdialog --error 'Kurulum tamamlanamadı: PyQt6 hâlâ bulunamadı.'
+        exit 1
+    fi
+fi
+exec /usr/bin/python3 -I "$HERE/usr/bin/kinect-facecam-gui-v14.py" "$@"

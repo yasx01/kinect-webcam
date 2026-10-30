@@ -1,0 +1,19 @@
+[
+  "gst-launch-1.0",
+  "-q",
+  "fdsrc",
+  "fd=0",
+  "!",
+  "rawvideoparse",
+  "width=640",
+  "height=480",
+  "format=rgb",
+  "framerate=30/1",
+  "!",
+  "videoconvert",
+  "!",
+  "pipewiresink",
+  "mode=provide",
+  "stream-properties=properties,media.class=Video/Source,media.role=Camera",
+  "client-name=Kinect Kamerasi"
+]

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Kinect Webcam v14
+Comment=Kinect kamera ve mikrofon kontrolü, ilk kurulum
+Exec=kinect-facecam
+Icon=kinect-facecam
+Terminal=false
+Categories=AudioVideo;Video;

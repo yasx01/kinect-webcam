@@ -1,0 +1,16 @@
+build-tools/
+dist/
+__pycache__/
+*.py[cod]
+UACFirmware*
+*.msi
+*.exe
+*.dll
+*.AppImage
+v14/payload/kinect_upload_fw
+v14/payload/manifest.json
+*.wav
+*.pcm
+*.jpg
+.env
+.env.*

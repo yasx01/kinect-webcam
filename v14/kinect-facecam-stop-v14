@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# OBS modu akisini durdurur. (v14: icerik v01 ile ayni, yalnizca yeni ad.)
+set -uo pipefail
+
+PIDFILE="/tmp/kinect-facecam.pid"
+
+notify() {
+    command -v notify-send &>/dev/null && notify-send "Kinect Webcam" "$1"
+    echo "$1"
+}
+
+if [ ! -f "$PIDFILE" ] || ! kill -0 "$(cat "$PIDFILE")" 2>/dev/null; then
+    notify "Zaten calismiyor."
+    rm -f "$PIDFILE"
+    exit 0
+fi
+
+PID="$(cat "$PIDFILE")"
+kill -TERM "$PID" 2>/dev/null
+sleep 1
+kill -0 "$PID" 2>/dev/null && kill -KILL "$PID" 2>/dev/null
+rm -f "$PIDFILE"
+notify "Kinect akisi durduruldu."
