@@ -1,18 +1,30 @@
 # Kinect Webcam
 
-Xbox 360 Kinect kamerasını ve mikrofonunu Fedora KDE üzerinde tek panelden kullanmak için Python/PyQt6 uygulaması. Güncel sürüm: **v14**. Windows sürümü henüz hazırlanmadı.
+Xbox 360 Kinect kamerasını ve mikrofonunu Fedora KDE üzerinde tek panelden kullanmak için Python/PyQt6 uygulaması. Güncel sürüm: **v15**. Windows sürümü henüz hazırlanmadı.
 
 ## Neler yapar?
 
 - OBS için V4L2 sanal kamera ve tarayıcılar için PipeWire kamera akışı.
 - Kinect mikrofonunu sistem genelinde sessize alma / sesi açma.
-- **Kamera / Mikrofon Testi:** mevcut kamera akışından canlı önizleme, mikrofon seviye göstergesi ve beş saniyelik ses kaydını dinleme.
+- Ana ekranda canlı görüntü, **Test Al** ile tek kareyi sabitleme ve **Canlıya dön**.
+- **Mikrofon Testi:** ses seviyesi, beş saniyelik geçici kayıt ve kaydı dinleme. Eski görüntü çıkışı testi aynı pencerede korunur.
+- Gerektiğinde açılan teknik ayrıntılar; varsayılan görünümde log kapalıdır.
 - Fedora x86_64 için yönetici onaylı ilk kurulum: eksik paketler, USB izinleri, firmware yükleyicisi ve sanal kamera ayarları.
 - Firefox kamera izin sorunlarını denetleme ve kullanıcı onayıyla önceki yeniden başlatma çözümü.
 
-Kamera testi Kinect'i ikinci kez açmaz; çalışan köprüden yaklaşık saniyede iki önizleme alır. Ana kamera akışı 30 kare/sn hedefler. Eski sürümün köprüsü çalışıyorsa v14 önizlemesi için akışı bir kez yeniden başlatın. “Görüntü çıkışını da test et” önceki çıkış testini korur.
+Kamera testi Kinect'i ikinci kez açmaz; çalışan köprüden yaklaşık saniyede iki önizleme alır. Ana kamera akışı 30 kare/sn hedefler. Önizleme üretmeyen eski bir köprü çalışıyorsa akışı bir kez yeniden başlatın. “Görüntü çıkışını da test et” önceki çıkış testini korur.
 
 Mikrofon yalnızca test düğmesine basınca dinlenir. Başka bir mikrofon otomatik seçilmez ve sessizdeki Kinect kendiliğinden açılmaz. Kayıt mono, 16 kHz, 16-bit ve beş saniyedir. Ses yalnızca yerel geçici dosyada tutulur; test penceresi kapanınca silinir. Kaydı dinlerken mikrofon testi durur. Test penceresini kapatmak kamera akışını durdurmaz; kamerayı Durdur düğmesiyle kapatın. Zorla kapatma/çökme durumunda geçici dosya normal kapanıştaki gibi silinemeyebilir.
+
+## Tarayıcıda kullanım
+
+**Chrome / Chromium / Edge / Brave:** uygulamada **OBS / Chromium** seçip Başlat’a basın. Ardından görüşme sitesinin kamera listesinde **Kinect360 Facecam** seçin. Bu yol V4L2 sanal kamerayı kullanır; `exclusive_caps=1` ile kamera yazıcısı başladıktan sonra görüntü yakalama aygıtı olarak görünür. Akışı başlatmadan açılmış kamera listesi için sekmeyi yenilemek gerekebilir.
+
+**Firefox:** uygulamada Firefox seçip Başlat’a basın; sitede **Kinect Kamerasi** seçin. Bu yol doğrudan PipeWire kaynağıdır. Chromium kullanımı Firefox izinlerini sıfırlamaz veya Firefox’u kapatmaz.
+
+Tarayıcının site/sistem kamera izinleri ayrıca geçerlidir; Flatpak paketlerinin kamera erişimi ayrıca gerekebilir. Tarayıcı ayarları, güvenlik bayrakları ve profil verileri otomatik değiştirilmez. Gerçek Google Meet ve Chromium donanım testi bu sürüm hazırlanırken yapılmamıştır.
+
+Altyapı: [Chromium kamera belgeleri](https://www.chromium.org/developers/design-documents/video-capture/), [v4l2loopback exclusive_caps](https://github.com/v4l2loopback/v4l2loopback#options).
 
 ## Çalıştırma
 
@@ -21,7 +33,7 @@ Bu bir **ince AppImage** projesidir: sistemin Python, PyQt6, libfreenect, FFmpeg
 Sistem daha önce hazırlanmışsa kaynak panelini açmak için:
 
 ```bash
-python3 -B v14/kinect-facecam-gui-v14.py
+python3 -B v15/kinect-facecam-gui-v15.py
 ```
 
 Bu komut paneli açar; sistem paketlerini kendiliğinden kurmaz. Kaynak checkout'unun ilk kurulum yükleri yerel derleme sırasında oluşturulur.
@@ -34,10 +46,10 @@ Derleme araçları: Bash, Python 3, C derleyicisi, pkg-config, libusb-1.0 geliş
 
 ```bash
 bash tools/fetch-build-tools.sh
-KINECT_FIRMWARE_PATH=/usr/lib/firmware/kinect/UACFirmware bash packaging/build-appimage-v14.sh
+KINECT_FIRMWARE_PATH=/usr/lib/firmware/kinect/UACFirmware bash packaging/build-appimage-v15.sh
 ```
 
-İlk komut resmi AppImage araçlarını yalnızca `build-tools/` içine indirir, sabit SHA-256 özetlerini doğrular; sudo kullanmaz. İkinci komut açık kaynak yükleyicisini derler, belirtilen yerel firmware'i yerel pakete ekler ve `dist/KinectWebcam-v14-x86_64.AppImage` üretir. Hiçbiri sistem kurulumu yapmaz. Firmware'i içeren çıktıyı yayımlamadan önce ilgili dağıtım haklarını ayrıca değerlendirin. `build-tools/`, `dist/`, firmware ve üretilen yükler git tarafından dışlanır.
+İlk komut resmi AppImage araçlarını yalnızca `build-tools/` içine indirir, sabit SHA-256 özetlerini doğrular; sudo kullanmaz. İkinci komut açık kaynak yükleyicisini derler, belirtilen yerel firmware'i yerel pakete ekler ve `dist/KinectWebcam-v15-x86_64.AppImage` üretir. Hiçbiri sistem kurulumu yapmaz. Firmware'i içeren çıktıyı yayımlamadan önce ilgili dağıtım haklarını ayrıca değerlendirin. `build-tools/`, `dist/`, firmware ve üretilen yükler git tarafından dışlanır.
 
 ## Denetimler
 
@@ -47,8 +59,8 @@ bash tools/run-tests.sh
 
 Komut her test dosyasını ayrı Python sürecinde çalıştırır. PyQt6, NumPy, python3-dbus, python3-gobject ve dbus-run-session gerekir. Kamera/ses testleri yapay veri kullanır; gerçek mikrofonu kaydetmez. Firefox izin entegrasyonu ayrı bir D-Bus oturumunda sahte izin deposuna bağlanır; gerçek Firefox kapanmaz veya ayarları değişmez.
 
-v14 için 94 otomatik test vardır. Gerçek Kinect görüntü/ses, USB çıkarıp takma, görüşme uygulaması ve temiz Fedora kurulumu ayrıca elle doğrulanmalıdır. Firefox'un her kamera isteğinde yeniden izin sorması garanti edilmez; web sitesi, Firefox ve portal izinleri ayrı katmanlardır. Genel profil sıfırlaması veya tarayıcı önbelleği silme otomatik yapılmaz.
+v15 için 112 otomatik test vardır. Başlat/durdur işlemleri üst üste bindirilmez. PID kimliği kullanıcı ve köprü komutu üzerinden doğrulanır; durdurma pidfd ile yapılır. Eski veya canlılığı doğrulanamayan kare güncel görüntü gibi sunulmaz. Gerçek Kinect görüntü/ses, USB çıkarıp takma, görüşme uygulaması ve temiz Fedora kurulumu ayrıca elle doğrulanmalıdır. Firefox'un her kamera isteğinde yeniden izin sorması garanti edilmez; web sitesi, Firefox ve portal izinleri ayrı katmanlardır. Genel profil sıfırlaması veya tarayıcı önbelleği silme otomatik yapılmaz.
 
 ## Üçüncü taraf kaynaklar
 
-`v14/vendor/kinect-audio-setup/kinect_upload_fw.c`, upstream kinect-audio-setup projesindendir; kaynak başlığındaki BSD koşulları ve `v14/licenses/` bildirimi korunmuştur. Köken bilgisi vendor dizinindedir. Microsoft firmware'i bu kodun lisansı kapsamında değildir. Projenin kendi kodu için henüz ayrı bir lisans seçilmemiştir; herkese açık görünmesi genel yeniden dağıtım izni anlamına gelmez.
+`v15/vendor/kinect-audio-setup/kinect_upload_fw.c`, upstream kinect-audio-setup projesindendir; kaynak başlığındaki BSD koşulları ve `v15/licenses/` bildirimi korunmuştur. Köken bilgisi vendor dizinindedir. Microsoft firmware'i bu kodun lisansı kapsamında değildir. Projenin kendi kodu için henüz ayrı bir lisans seçilmemiştir; herkese açık görünmesi genel yeniden dağıtım izni anlamına gelmez.

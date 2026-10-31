@@ -14,3 +14,6 @@ v14/payload/manifest.json
 *.jpg
 .env
 .env.*
+
+v15/payload/kinect_upload_fw
+v15/payload/manifest.json

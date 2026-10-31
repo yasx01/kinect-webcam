@@ -1,0 +1,174 @@
+"""No hardware, root, package manager or host system changes: mocked setup scenarios."""
+import contextlib
+import hashlib
+import importlib.util
+import io
+import json
+from pathlib import Path
+import subprocess
+import tempfile
+import unittest
+from unittest.mock import patch
+
+ROOT = Path(__file__).resolve().parents[2]
+spec = importlib.util.spec_from_file_location('setup_v15', ROOT/'v15/kinect-facecam-setup-v15.py')
+setup = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(setup)
+
+
+class SetupTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory(prefix='kinect-setup-test-')
+        self.base = Path(self.tmp.name)
+        self.addCleanup(self.tmp.cleanup)
+
+    def fixture_payload(self):
+        folder=self.base/'payload';folder.mkdir()
+        firmware=b'synthetic test firmware; not Microsoft data'
+        loader=b'synthetic loader fixture'
+        (folder/'UACFirmware').write_bytes(firmware)
+        (folder/'kinect_upload_fw').write_bytes(loader)
+        (folder/'manifest.json').write_text(json.dumps({
+            'UACFirmware':hashlib.sha256(firmware).hexdigest(),
+            'kinect_upload_fw':hashlib.sha256(loader).hexdigest()}))
+        return hashlib.sha256(firmware).hexdigest()
+
+    def test_payload_matches_installed_firmware_hash(self):
+        digest=self.fixture_payload()
+        with patch.object(setup,'HERE',self.base),patch.object(setup,'FW_SHA',digest):
+            setup.validate_payload()
+
+    def test_corrupted_firmware_is_rejected(self):
+        (self.base/'payload').mkdir()
+        (self.base/'payload/UACFirmware').write_bytes(b'corrupted')
+        with patch.object(setup, 'HERE', self.base):
+            with self.assertRaisesRegex(RuntimeError, 'SHA-256'):
+                setup.validate_payload()
+
+    def test_corrupted_loader_is_rejected(self):
+        digest=self.fixture_payload()
+        (self.base/'payload/kinect_upload_fw').write_bytes(b'corrupt')
+        with patch.object(setup,'HERE',self.base),patch.object(setup,'FW_SHA',digest):
+            with self.assertRaisesRegex(RuntimeError,'bütünlüğü'):
+                setup.validate_payload()
+
+    def test_no_root_is_rejected_before_plan(self):
+        with patch.object(setup.os, 'geteuid', return_value=1000), patch.object(setup, 'plan') as plan:
+            with self.assertRaisesRegex(RuntimeError, 'Yönetici'):
+                setup.apply()
+            plan.assert_not_called()
+
+    def test_non_fedora_does_not_start_install(self):
+        with patch.object(setup, 'supported', return_value=False), patch.object(setup, 'run') as run:
+            with self.assertRaisesRegex(RuntimeError, 'Fedora'):
+                setup.plan()
+            run.assert_not_called()
+
+    def test_package_detection_reports_absent_tools(self):
+        installed = '\n'.join(setup.PACKAGES[1:])
+        def run(args, **kwargs):
+            if args[0:3] == ['rpm', '-q', '--qf']:
+                return subprocess.CompletedProcess(args, 1, installed)
+            return subprocess.CompletedProcess(args, 0, '')
+        with patch.object(setup, 'run', side_effect=run):
+            self.assertEqual(setup.missing_packages(), ['python3'])
+
+    def application(self, *, failure=None, ready=True, stream=False):
+        target = self.base/'etc/rule'
+        target.parent.mkdir()
+        target.write_bytes(b'old')
+        records = []
+        def run(args, **kwargs):
+            records.append(args)
+            if args[0] == 'pgrep':
+                return subprocess.CompletedProcess(args, 0 if stream else 1, '')
+            if args[0] == failure:
+                raise RuntimeError('simulated ' + failure + ' failure')
+            return subprocess.CompletedProcess(args, 0, 'v4l2' if args[0]=='ffmpeg' else '')
+        RealPath = Path
+        def paths(value):
+            if value == '/var/backups/kinect-facecam':
+                return self.base/'backups'
+            if value == '/etc/modprobe.d/kinect-v4l2loopback.conf':
+                return self.base/'absent-legacy'
+            return RealPath(value)
+        stack = contextlib.ExitStack()
+        stack.enter_context(patch.object(setup.os, 'geteuid', return_value=0))
+        stack.enter_context(patch.object(setup, 'plan', return_value=['python3']))
+        stack.enter_context(patch.object(setup, 'missing_packages', return_value=[]))
+        stack.enter_context(patch.object(setup, 'destinations', return_value={target:b'new'}))
+        stack.enter_context(patch.object(setup, 'check_state', return_value={'ready':ready,'issues':['reboot needed'] if not ready else []}))
+        stack.enter_context(patch.object(setup, 'run', side_effect=run))
+        stack.enter_context(patch.object(setup, 'Path', side_effect=paths))
+        return stack, target, records
+
+    def test_dnf_failure_does_not_write_system_files(self):
+        stack, target, records = self.application(failure='dnf')
+        with stack, contextlib.redirect_stdout(io.StringIO()):
+            with self.assertRaisesRegex(RuntimeError, 'dnf'):
+                setup.apply()
+        self.assertEqual(target.read_bytes(), b'old')
+
+    def test_live_camera_prevents_changes(self):
+        stack, target, records = self.application(stream=True)
+        with stack:
+            with self.assertRaisesRegex(RuntimeError, 'akışını durdur'):
+                setup.apply()
+        self.assertEqual(target.read_bytes(), b'old')
+        self.assertFalse(any(cmd[0]=='dnf' for cmd in records))
+
+    def test_changed_file_backup_and_idempotent_retry(self):
+        stack, target, records = self.application()
+        with stack, contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(setup.apply(),0)
+            self.assertEqual(setup.apply(),0)
+        self.assertEqual(target.read_bytes(), b'new')
+        backups = list((self.base/'backups').rglob('rule'))
+        self.assertEqual(len(backups),1)
+        self.assertEqual(backups[0].read_bytes(), b'old')
+        self.assertFalse(any('kinect-webcam.service' in cmd for cmd in records))
+
+    def test_akmods_failure_is_not_success(self):
+        stack, target, records = self.application(failure='akmods')
+        with stack, contextlib.redirect_stdout(io.StringIO()):
+            with self.assertRaisesRegex(RuntimeError, 'akmods'):
+                setup.apply()
+        self.assertFalse(any(cmd[0]=='udevadm' for cmd in records))
+
+    def test_not_ready_returns_nonzero(self):
+        stack, target, records = self.application(ready=False)
+        with stack, contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(setup.apply(),3)
+
+
+class SummaryTests(unittest.TestCase):
+    def test_real_read_only_check_has_four_groups(self):
+        paths=['/usr/lib/firmware/kinect/UACFirmware','/usr/local/libexec/kinect-facecam/kinect_upload_fw',
+               '/etc/udev/rules.d/55-kinect_audio.rules','/etc/modprobe.d/kinect-blacklist.conf',
+               '/etc/modprobe.d/99-kinect-facecam.conf','/etc/modules-load.d/v4l2loopback.conf']
+        with patch.object(setup,'supported',return_value=True),patch.object(setup,'validate_payload'), \
+             patch.object(setup,'missing_packages',return_value=[]), \
+             patch.object(setup,'destinations',return_value={Path(name):b'fixture' for name in paths}):
+            value=setup.check_state()
+        self.assertEqual([item['id'] for item in value['checks']],['packages','microphone','camera','virtual_camera'])
+        self.assertIsInstance(value['ready'],bool)
+        self.assertTrue(all(item['status'] in ('ready','action','restart') for item in value['checks']))
+        self.assertNotIn('/etc/',' '.join(item['detail'] for item in value['checks']))
+
+    def test_unsupported_system_cannot_install(self):
+        with patch.object(setup, 'supported', return_value=False):
+            value = setup.check_state()
+        self.assertFalse(value['ready'])
+        self.assertFalse(value['can_install'])
+
+    def test_bad_payload_cannot_install(self):
+        with patch.object(setup, 'supported', return_value=True), \
+             patch.object(setup, 'validate_payload', side_effect=RuntimeError('bad payload')):
+            value = setup.check_state()
+        self.assertFalse(value['ready'])
+        self.assertFalse(value['can_install'])
+        self.assertIn('bad payload',value['issues'])
+
+
+if __name__ == '__main__':
+    unittest.main()
