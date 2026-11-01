@@ -17,3 +17,9 @@ v14/payload/manifest.json
 
 v15/payload/kinect_upload_fw
 v15/payload/manifest.json
+
+# Windows local build output
+windows/native/
+windows/.venv/
+windows/build/
+*.spec

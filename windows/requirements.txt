@@ -1,0 +1,7 @@
+# Python 3.12 x64. Pinned for Windows 10 support; no system-wide installation.
+PyQt6==6.12.0
+PyQt6-Qt6==6.12.0
+numpy==2.5.4
+pyvirtualcam==0.15.0
+pycaw==20260927
+pyinstaller==6.22.3
