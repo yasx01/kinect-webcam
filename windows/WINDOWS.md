@@ -24,6 +24,6 @@ GitHub Actions `Windows executable` iş akışı, sabit libfreenect v0.7.5 commi
 
 Çıktı ZIP'i exe, kurulum açıklaması, lisanslar, SHA-256 ve test raporu içerir. Microsoft firmware'i/sürücüsü içermez. Kaynaklar ve derleme tarifi aynı GitHub deposundadır. İmzalanmamış ilk sürüm için Windows tanınmayan yayıncı uyarısı gösterebilir.
 
-Yerel Windows derlemesi: Python 3.12 x64 ve MSYS2 MINGW64 derleme araçları gerekir. `bash windows/build-native.sh` native dosyaları `windows/native` altında üretir. Ayrı bir Python sanal ortamında `pip install -r windows/requirements.txt`, sonra `powershell -File windows/build.ps1` çalıştırın. Scriptler sürücü veya OBS kurulumu yapmaz.
+Yerel Windows derlemesi: Python 3.12 x64 ve MSYS2 UCRT64 derleme araçları gerekir. `bash windows/build-native.sh` native dosyaları `windows/native` altında üretir. Ayrı bir Python sanal ortamında `pip install -r windows/requirements.txt`, sonra `powershell -File windows/build.ps1` çalıştırın. Scriptler sürücü veya OBS kurulumu yapmaz.
 
 Kaynaklar: [OpenKinect](https://github.com/OpenKinect/libfreenect), [pyvirtualcam](https://github.com/letmaik/pyvirtualcam), [Qt Windows desteği](https://doc.qt.io/qt-6/windows.html).
