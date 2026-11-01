@@ -50,7 +50,8 @@ def obs_camera():
 def write_frame(folder, frame, sequence):
     if frame.shape != (HEIGHT, WIDTH, 3) or frame.dtype != np.uint8:
         raise ValueError('Kamera karesinin biçimi geçersiz.')
-    image = QImage(frame.tobytes(), WIDTH, HEIGHT, WIDTH*3, QImage.Format.Format_RGB888)
+    raw = frame.tobytes()
+    image = QImage(raw, WIDTH, HEIGHT, WIDTH*3, QImage.Format.Format_RGB888)
     buffer = QBuffer(); buffer.open(QIODevice.OpenModeFlag.WriteOnly)
     if not image.save(buffer, 'JPEG', 80):
         raise RuntimeError('Önizleme oluşturulamadı.')

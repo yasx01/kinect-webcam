@@ -125,6 +125,21 @@ class GuiTests(unittest.TestCase):
             dialog.start()
         start.assert_not_called();self.assertIn('Başka mikrofon kullanılmadı',dialog.status.text())
 
+    def test_native_audio_recording_is_exactly_five_seconds(self):
+        import wave
+        import numpy as np
+        dialog=audio.AudioTest(self.window);self.addCleanup(dialog.reject)
+        fmt=QAudioFormat();fmt.setSampleRate(48000);fmt.setChannelCount(4);fmt.setSampleFormat(QAudioFormat.SampleFormat.Float)
+        dialog.format=fmt;dialog.rate=48000;dialog.target=48000*2*5
+        dialog.stream=Mock()
+        dialog.stream.readAll.return_value=np.full((48000*6,4),0.5,dtype='<f4').tobytes()
+        dialog.read()
+        with wave.open(str(dialog.path),'rb') as recording:
+            self.assertEqual(recording.getframerate(),48000)
+            self.assertEqual(recording.getnframes(),48000*5)
+            self.assertEqual(recording.getnchannels(),1)
+        self.assertTrue(dialog.play.isEnabled());self.assertEqual(len(dialog.samples),0)
+
     def test_audio_dialog_close_deletes_recording(self):
         dialog=audio.AudioTest(self.window);path=dialog.path;path.write_bytes(b'synthetic')
         dialog.reject();self.assertFalse(path.exists())

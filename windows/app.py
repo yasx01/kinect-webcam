@@ -9,7 +9,7 @@ import time
 sys.path.insert(0,str(Path(__file__).resolve().parent))
 from common import resources, microphone_endpoint, atomic_write
 from PyQt6.QtCore import Qt, QTimer, QProcess, QUrl
-from PyQt6.QtGui import QPixmap, QDesktopServices
+from PyQt6.QtGui import QPixmap, QDesktopServices, QIcon
 from PyQt6.QtWidgets import (QApplication,QMainWindow,QWidget,QVBoxLayout,QHBoxLayout,QLabel,
     QPushButton,QCheckBox,QDialog,QMessageBox,QFileDialog,QProgressBar,QPlainTextEdit,QScrollArea,QFrame)
 
@@ -80,6 +80,9 @@ def child_command(*args):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__();self.setWindowTitle('Kinect Webcam · Windows');self.resize(840,720);self.setMinimumSize(640,560)
+        icon=resources()/'kinect-facecam-icon-v15.png'
+        if not icon.is_file():icon=Path(__file__).resolve().parents[1]/'v15/kinect-facecam-icon-v15.png'
+        self.setWindowIcon(QIcon(str(icon)))
         self.temp=tempfile.TemporaryDirectory(prefix='kinect-webcam-camera-')
         self.folder=Path(self.temp.name);self.frozen=False;self.pixmap=None;self.key=None;self.mic_dialog=None
         self.started=0;self.last_frame=0;self.user_stop=False
