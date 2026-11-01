@@ -1,6 +1,6 @@
 # Kinect Webcam
 
-Xbox 360 Kinect kamerasını ve mikrofonunu Fedora KDE üzerinde tek panelden kullanmak için Python/PyQt6 uygulaması. Güncel sürüm: **v15**. Windows sürümü henüz hazırlanmadı.
+Xbox 360 Kinect kamerasını ve mikrofonunu Fedora KDE üzerinde tek panelden kullanmak için Python/PyQt6 uygulaması. Linux sürümü: **v15**. Windows 10 (1809+) / Windows 11 x64 sürümü için [Windows kurulum ve derleme rehberine](windows/WINDOWS.md) bakın.
 
 ## Neler yapar?
 
