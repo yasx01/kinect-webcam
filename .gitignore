@@ -23,3 +23,6 @@ windows/native/
 windows/.venv/
 windows/build/
 *.spec
+
+v16/payload/kinect_upload_fw
+v16/payload/manifest.json

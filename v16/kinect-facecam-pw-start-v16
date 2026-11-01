@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# Tarayici modu: Kinect -> PipeWire "Kinect Kamerasi" akisini arka planda baslatir.
+# v16: kopru betigi bu dosyanin yanindan bulunur (AppImage icinde de calisir).
+set -uo pipefail
+
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROCESS="$HERE/kinect_facecam_process_v16.py"
+BRIDGE="$HERE/kinect-facecam-bridge-pipewire-v16.py"
+PIDFILE="/tmp/kinect-facecam-pw.pid"
+LOGFILE="/tmp/kinect-facecam-pw.log"
+OBS_PIDFILE="/tmp/kinect-facecam.pid"
+
+if /usr/bin/python3 -I "$PROCESS" check "$PIDFILE" pw; then
+    echo "Zaten calisiyor (PID $(cat "$PIDFILE"))."
+    exit 0
+fi
+
+# Kinect ayni anda tek programa hizmet verir (LIBUSB_ERROR_BUSY).
+if /usr/bin/python3 -I "$PROCESS" check "$OBS_PIDFILE" obs \
+    || pgrep -u "$(id -u)" -f 'kinect-facecam-bridge(-v[0-9]+)?\.py' > /dev/null; then
+    echo "UYARI: OBS modu (v4l2loopback) Kinect akisi zaten calisiyor."
+    echo "Kinect donanimini iki program birden kullanamaz; once onu durdur."
+    exit 1
+fi
+if pgrep -u "$(id -u)" -f 'kinect-facecam-bridge-pipewire' > /dev/null; then
+    echo "Baska bir Tarayici modu koprusu zaten calisiyor (PID dosyasi olmadan baslatilmis)."
+    exit 1
+fi
+
+rm -f "$LOGFILE"
+cd "$HOME" || exit 1
+setsid /usr/bin/python3 -I "$BRIDGE" > "$LOGFILE" 2>&1 < /dev/null &
+echo $! > "$PIDFILE"
+
+sleep 2
+if /usr/bin/python3 -I "$PROCESS" check "$PIDFILE" pw; then
+    echo "Baslatildi. Firefox'ta kamera olarak 'Kinect Kamerasi' secilebilir."
+else
+    echo "Baslatilamadi. Log: $LOGFILE"
+    exit 1
+fi

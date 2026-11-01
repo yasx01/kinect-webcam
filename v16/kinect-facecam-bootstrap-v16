@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Shell bootstrap works even before Python/PyQt exist. Stage outside the FUSE mount.
+set -uo pipefail
+if [ "${1:-}" = --apply ]; then
+    [ "$(id -u)" -eq 0 ] || exit 1
+    grep -qE '^ID=(fedora|"fedora")$' /etc/os-release || exit 1
+    [ "$(uname -m)" = x86_64 ] || exit 1
+    if [ ! -x /usr/bin/python3 ]; then
+        /usr/bin/dnf install -y python3 || exit 1
+    fi
+    exec /usr/bin/python3 -I -u "$2" --apply
+fi
+STAGE=$(mktemp -d -t kinect-facecam-setup-XXXXXXXX) || exit 1
+trap 'rm -rf "$STAGE"' EXIT
+if ! cp "$0" "$STAGE/bootstrap" || ! cp "$1" "$STAGE/kinect-facecam-setup-v16.py" \
+    || ! cp -R "$(dirname "$1")/payload" "$STAGE/payload"; then
+    echo 'Kurulum dosyaları hazırlanamadı.' >&2
+    exit 1
+fi
+/usr/bin/pkexec --disable-internal-agent /bin/bash "$STAGE/bootstrap" --apply "$STAGE/kinect-facecam-setup-v16.py"
+RESULT=$?
+if [ "$RESULT" -ne 0 ]; then
+    echo "Kurulum tamamlanmadı (kod $RESULT). Yukarıdaki hataları incele."
+fi
+read -r -p 'Pencereyi kapatmak için Enter tuşuna bas… ' _answer
+exit "$RESULT"
