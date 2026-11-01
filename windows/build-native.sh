@@ -8,6 +8,8 @@ OUT="$ROOT/windows/native"
 mkdir -p "$WORK" "$OUT/licenses"
 git clone --no-checkout https://github.com/OpenKinect/libfreenect.git "$WORK/libfreenect"
 git -C "$WORK/libfreenect" checkout --detach 09a1f098040d00e6070c18174904547ec31d2774
+# Upstream's Windows shim lacks sleep(); modern GCC rejects its implicit declaration.
+printf '\n#include <windows.h>\n#ifndef sleep\n#define sleep(seconds) Sleep((DWORD)(seconds) * 1000u)\n#endif\n' >> "$WORK/libfreenect/platform/windows/unistd.h"
 cmake -S "$WORK/libfreenect" -B "$WORK/build" -G Ninja \
   -DCMAKE_BUILD_TYPE=Release -DBUILD_REDIST_PACKAGE=ON -DBUILD_EXAMPLES=OFF \
   -DBUILD_FAKENECT=OFF -DBUILD_CPP=OFF -DBUILD_C_SYNC=ON \
