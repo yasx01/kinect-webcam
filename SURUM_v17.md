@@ -11,3 +11,5 @@ Referans alınan eski arayüze yakın koyu renkler, yuvarlak düğmeler ve ayrı
 120 otomatik test, Python/Bash sözdizimi denetimi ve küçük pencere yerleşim testi geçti. Önizlemeler kamera/mikrofon açılmadan oluşturuldu. Gerçek Kinect ve temiz Fedora KDE kurulumu bu değişiklik için test edilmedi.
 
 Derleme: `bash packaging/build-appimage-v17.sh`. Çıktı: `dist/KinectWebcam-v17-x86_64.AppImage`.
+
+AppImage içeriği kaynaklarla karşılaştırıldı, yükleyici özeti doğrulandı ve paket içindeki arayüz offscreen başlatıldı. AppImage SHA-256: `e706e9a2cb4b3914709533bcaacc965a46bdde082932f820e1b98f9ae484e9a6`.

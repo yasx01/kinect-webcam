@@ -11,3 +11,10 @@ Windows 10 1809+ / Windows 11 x64 hedeflenir.
 19 kaynak testi geçti. Windows exe GitHub Actions Windows ortamında derlenir. Kamera sürücüsü/libusbK ve OBS Virtual Camera gereksinimleri değişmedi. Uygulama sürücüleri otomatik değiştirmez; firmware/SDK pakete dahil değildir.
 
 Gerçek Kinect, fiziksel Windows 10 ve gerçek OBS görüşmesi bu değişiklik için test edilmedi.
+
+Windows derleme kaydı: https://github.com/yasx01/kinect-webcam/actions/runs/41637852981
+Kaynak commit: 3e473fd40eb5b26b523947a749bab950b0774cd3.
+
+Windows runner üzerinde 19 test geçti. Paketlenmiş exe de başlatıldı: native kitaplık/yükleyici açılışı, arayüz başlangıcı, yapay kamera alt işlemi, kayıt başlatmadan mikrofon penceresi ve UTF-8 Türkçe mesaj denetimleri geçti. Bu kontroller fiziksel Kinect testi değildir.
+
+İndirilen ZIP ve içindeki PE/AMD64 exe doğrulandı. EXE SHA-256: `45d9528872a86b17adffadfac13a4a95ae168fafdefc540ba20b2b8f4df470c2`. ZIP SHA-256: `57f69042465e4987347c53066151af48c596f1dfce559898715d9902de4f5887`.

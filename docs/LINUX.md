@@ -1,6 +1,6 @@
-# Linux · Kinect Webcam v16
+# Linux · Kinect Webcam v17
 
-**[AppImage dosyasını indir](https://github.com/yasx01/kinect-webcam/releases/download/linux-v16-preview/KinectWebcam-v16-x86_64.AppImage)** · [Sürüm notları](../SURUM_v16.md)
+**[AppImage dosyasını indir](https://github.com/yasx01/kinect-webcam/releases/download/linux-v17-preview/KinectWebcam-v17-x86_64.AppImage)** · [Sürüm notları](../SURUM_v17.md)
 
 ## İndir ve aç
 
@@ -13,11 +13,11 @@ Hedef: **Fedora KDE x86_64**. AppImage ince pakettir; sistemin Python/PyQt6, lib
 Terminal kullanmak istersen, dosyanın bulunduğu klasörde:
 
 ```bash
-chmod +x KinectWebcam-v16-x86_64.AppImage
-./KinectWebcam-v16-x86_64.AppImage
+chmod +x KinectWebcam-v17-x86_64.AppImage
+./KinectWebcam-v17-x86_64.AppImage
 ```
 
-İlk komut çalıştırma izni verir; ikinci komut uygulamayı açar. FUSE erişimi olmayan bir ortamda `./KinectWebcam-v16-x86_64.AppImage --appimage-extract-and-run` seçeneği kullanılabilir.
+İlk komut çalıştırma izni verir; ikinci komut uygulamayı açar. FUSE erişimi olmayan bir ortamda `./KinectWebcam-v17-x86_64.AppImage --appimage-extract-and-run` seçeneği kullanılabilir.
 
 ## Tarayıcı ve OBS
 
@@ -41,13 +41,13 @@ Projenin kök klasöründe:
 
 ```bash
 bash tools/fetch-build-tools.sh
-bash packaging/build-appimage-v16.sh
+bash packaging/build-appimage-v17.sh
 ```
 
-İlk komut sabit sürümlü AppImage araçlarını sadece `build-tools/` içine indirir. İkinci komut açık kaynak yükleyicisini derler ve `dist/KinectWebcam-v16-x86_64.AppImage` üretir. Derleme firmware gerektirmez ve pakete firmware eklemez. Sistem kurulumu yapmaz; C derleyicisi, pkg-config ve libusb geliştirme dosyalarının bulunması gerekir.
+İlk komut sabit sürümlü AppImage araçlarını sadece `build-tools/` içine indirir. İkinci komut açık kaynak yükleyicisini derler ve `dist/KinectWebcam-v17-x86_64.AppImage` üretir. Derleme firmware gerektirmez ve pakete firmware eklemez. Sistem kurulumu yapmaz; C derleyicisi, pkg-config ve libusb geliştirme dosyalarının bulunması gerekir.
 
 ```bash
 bash tools/run-tests.sh
 ```
 
-119 otomatik test, Python/Bash sözdizimi denetimleri ve paket içindeki arayüzün offscreen açılışı kontrol edildi. Gerçek Kinect, temiz Fedora kurulumu ve görüşme uygulaması testi yapılmadı. [Paket doğrulama notları](../SURUM_v16.md)
+120 otomatik test, Python/Bash sözdizimi denetimleri ve paket içindeki arayüzün offscreen açılışı kontrol edildi. Gerçek Kinect, temiz Fedora kurulumu ve görüşme uygulaması testi yapılmadı. [Paket doğrulama notları](../SURUM_v17.md)
