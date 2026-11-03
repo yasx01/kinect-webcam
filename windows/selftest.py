@@ -59,10 +59,15 @@ def self_test(report):
             if not process.waitForFinished(20000):
                 process.kill();process.waitForFinished(3000);raise RuntimeError('Child process did not stop.')
             assert process.exitCode()==0,(process.exitCode(),bytes(process.readAllStandardError()))
-            state=json.loads((Path(folder)/'state.json').read_text())
+            state=json.loads((Path(folder)/'state.json').read_text(encoding='utf-8'))
             assert state['state']=='running'
             assert (Path(folder)/'frame.jpg').read_bytes().startswith(b'\xff\xd8')
             checks['packaged_camera_child_and_virtual_send']=True
+        message='Kinect kamerası açılamadı. USB/güç bağlantısını denetle. ŞİĞÜÖÇ ıüğöç'
+        atomic_write(window.folder/'state.json',json.dumps({'state':'error','message':message},ensure_ascii=False).encode('utf-8'))
+        window.finished(1,QProcess.ExitStatus.NormalExit)
+        assert window.status.text()==message
+        checks['turkish_utf8_child_message']=True
         from audio import AudioTest,mono_pcm16
         dialog=AudioTest(window);assert dialog.source is None;dialog.reject()
         checks['audio_dialog_no_implicit_recording']=True

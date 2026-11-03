@@ -1,0 +1,3 @@
+Bu pakette Microsoft UACFirmware, SDK/MSI veya Microsoft sürücüsü bulunmaz.
+Mikrofon hazırlığı için kullanıcı kendi kullanım hakkına sahip olduğu yerel UACFirmware dosyasını seçebilir.
+Bu dosya uygulamanın açık kaynak yükleyicisinin lisansı kapsamında değildir.

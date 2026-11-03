@@ -89,7 +89,34 @@ class GuiTests(unittest.TestCase):
     def test_launch_does_not_start_camera_or_microphone(self):
         self.assertEqual(self.window.worker.state(),QProcess.ProcessState.NotRunning)
         self.assertIsNone(self.window.mic_dialog)
-        self.assertTrue(self.window.details.isHidden())
+        self.assertFalse(self.window.details.isHidden())
+
+    def test_utf8_child_messages_ignore_windows_ansi_locale(self):
+        message='Kinect kamerası açılamadı. USB/güç bağlantısını denetle. ŞİĞÜÖÇ ıüğöç'
+        (self.window.folder/'state.json').write_bytes(json.dumps({'state':'error','message':message},ensure_ascii=False).encode('utf-8'))
+        original=Path.read_text
+        def windows_read(path,encoding=None,errors=None):
+            return original(path,encoding=encoding or 'cp1252',errors=errors)
+        with patch.object(Path,'read_text',windows_read):
+            with patch.object(self.window.worker,'state',return_value=QProcess.ProcessState.Running),patch.object(self.window,'stop'):
+                self.window.refresh()
+            self.assertEqual(self.window.status.text(),message)
+            self.window.finished(1,QProcess.ExitStatus.NormalExit)
+            self.assertEqual(self.window.status.text(),message)
+            dialog=gui.Setup(self.window);self.addCleanup(dialog.reject)
+            dialog.result_temp=tempfile.TemporaryDirectory();self.addCleanup(dialog.result_temp.cleanup)
+            (Path(dialog.result_temp.name)/'result.json').write_bytes(json.dumps({'message':message},ensure_ascii=False).encode('utf-8'))
+            dialog.completed(0,QProcess.ExitStatus.NormalExit)
+            self.assertEqual(dialog.status.text(),message)
+
+    def test_reference_theme_toggle_and_restart(self):
+        self.assertTrue(self.window.dark_mode)
+        self.assertIn('Kare Al / Test Et',self.window.test_button.text())
+        self.window.toggle_theme();self.assertFalse(self.window.dark_mode)
+        self.assertEqual(self.window.theme_button.text(),'Koyu Tema')
+        with patch.object(self.window,'stop') as stop,patch.object(self.window,'start') as start:
+            self.window.restart()
+        stop.assert_called_once();start.assert_called_once()
 
     def test_stopped_stream_cannot_freeze_stale_image(self):
         self.window.pixmap=QPixmap(12,12)
