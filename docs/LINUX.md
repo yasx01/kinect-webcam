@@ -1,6 +1,6 @@
-# Linux · Kinect Webcam v17
+# Linux · Kinect Webcam v18
 
-**[AppImage dosyasını indir](https://github.com/yasx01/kinect-webcam/releases/download/linux-v17-preview/KinectWebcam-v17-x86_64.AppImage)** · [Sürüm notları](../SURUM_v17.md)
+**[AppImage dosyasını indir](https://github.com/yasx01/kinect-webcam/releases/download/linux-v18-preview/KinectWebcam-v18-x86_64.AppImage)** · [Sürüm notları](../SURUM_v18.md)
 
 ## İndir ve aç
 
@@ -13,11 +13,11 @@ Hedef: **Fedora KDE x86_64**. AppImage ince pakettir; sistemin Python/PyQt6, lib
 Terminal kullanmak istersen, dosyanın bulunduğu klasörde:
 
 ```bash
-chmod +x KinectWebcam-v17-x86_64.AppImage
-./KinectWebcam-v17-x86_64.AppImage
+chmod +x KinectWebcam-v18-x86_64.AppImage
+./KinectWebcam-v18-x86_64.AppImage
 ```
 
-İlk komut çalıştırma izni verir; ikinci komut uygulamayı açar. FUSE erişimi olmayan bir ortamda `./KinectWebcam-v17-x86_64.AppImage --appimage-extract-and-run` seçeneği kullanılabilir.
+İlk komut çalıştırma izni verir; ikinci komut uygulamayı açar. FUSE erişimi olmayan bir ortamda `./KinectWebcam-v18-x86_64.AppImage --appimage-extract-and-run` seçeneği kullanılabilir.
 
 ## Tarayıcı ve OBS
 
@@ -26,6 +26,12 @@ chmod +x KinectWebcam-v17-x86_64.AppImage
 - **OBS isteğe bağlıdır.** İki tarayıcı yolu da OBS uygulaması olmadan çalışacak şekilde hazırlanmıştır. OBS ile kayıt/yayın yapmak istersen OBS'yi ayrıca kurabilirsin.
 
 Akışı başlattıktan sonra görüşme sekmesini yenilemek gerekebilir. Site ve sistem kamera/mikrofon izinleri geçerlidir. Flatpak kamera erişimi ve Secure Boot nedeniyle çekirdek modülü yüklenmesi ayrıca ayar gerektirebilir.
+
+## Önizleme ve yayın
+
+Uygulama, çalışan köprüyü açılışta tanır ve hazır kare varsa otomatik gösterir. **Kare Al / Test Et** yalnızca bu görüntüyü sabitler; fiziksel kamerayı veya sanal kamera aygıtını ayrıca açmaz. **Önizleme açık** düğmesiyle paneli kapatabilir, **Canlıya dön** ile sabit kareden canlı görüntüye dönebilirsin. Paneli veya test penceresini kapatmak OBS/Firefox yayınını durdurmaz.
+
+**Durdur** düğmesi asıl yayını durdurur; önizlemeyi kapatmak için kullanılmamalıdır. İki yayın köprüsü aynı fiziksel kamerayı birlikte açamaz. Elle mod değiştirmek görüşmeyi kesebilir ve onay ister; önizleme için mod değiştirmek gerekmez. Çok eski bir köprü kare kopyası sağlamıyorsa yayın korunur ve görüntü panelinde bu açıklanır.
 
 ## Mikrofon hazırlığı
 
@@ -41,13 +47,13 @@ Projenin kök klasöründe:
 
 ```bash
 bash tools/fetch-build-tools.sh
-bash packaging/build-appimage-v17.sh
+bash packaging/build-appimage-v18.sh
 ```
 
-İlk komut sabit sürümlü AppImage araçlarını sadece `build-tools/` içine indirir. İkinci komut açık kaynak yükleyicisini derler ve `dist/KinectWebcam-v17-x86_64.AppImage` üretir. Derleme firmware gerektirmez ve pakete firmware eklemez. Sistem kurulumu yapmaz; C derleyicisi, pkg-config ve libusb geliştirme dosyalarının bulunması gerekir.
+İlk komut sabit sürümlü AppImage araçlarını sadece `build-tools/` içine indirir. İkinci komut açık kaynak yükleyicisini derler ve `dist/KinectWebcam-v18-x86_64.AppImage` üretir. Derleme firmware gerektirmez ve pakete firmware eklemez. Sistem kurulumu yapmaz; C derleyicisi, pkg-config ve libusb geliştirme dosyalarının bulunması gerekir.
 
 ```bash
 bash tools/run-tests.sh
 ```
 
-120 otomatik test, Python/Bash sözdizimi denetimleri ve paket içindeki arayüzün offscreen açılışı kontrol edildi. Gerçek Kinect, temiz Fedora kurulumu ve görüşme uygulaması testi yapılmadı. [Paket doğrulama notları](../SURUM_v17.md)
+121 otomatik test, Python/Bash sözdizimi denetimleri ve paket içindeki arayüzün offscreen açılışı kontrol edildi. Çalışan Kinect köprüsünden hazır kare okuma ve panel kapanınca aynı köprünün kare üretmeye devam etmesi bu bilgisayarda doğrulandı. Temiz Fedora kurulumu ve gerçek görüşme testi yapılmadı. [Paket doğrulama notları](../SURUM_v18.md)
