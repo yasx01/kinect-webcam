@@ -1,0 +1,12 @@
+{
+  "name": "Kinect for Windows Runtime v1.8",
+  "version": "1.8.0.595",
+  "file": "KinectRuntime-v1.8-Setup.exe",
+  "bytes": 116273144,
+  "sha256": "f4d4143fb0f0a8d276889c077bfc8af42bfe99c128cadab5e316bf015a9858e9",
+  "official_page": "https://www.microsoft.com/en-us/download/details.aspx?id=40277",
+  "official_download": "https://download.microsoft.com/download/e/c/5/ec50686b-82f4-4dbf-a922-980183b214e6/KinectRuntime-v1.8-Setup.exe",
+  "binary_mirrored": false,
+  "license_checked": "2026-11-04",
+  "license_payload": "Original signed installer, attached bootstrapper CAB, English license payload u28"
+}

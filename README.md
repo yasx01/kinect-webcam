@@ -7,7 +7,7 @@
     <img alt="Windows 10 ve üzeri" src="https://img.shields.io/badge/Windows-10%2B-3578E5?style=flat-square">
     <img alt="Linux Fedora" src="https://img.shields.io/badge/Linux-Fedora-3C6EB4?style=flat-square">
   </p>
-  <p><strong><a href="https://github.com/yasx01/kinect-webcam/releases/download/windows-v0.3.0/KinectWebcam-Windows-x64.zip">Windows paketini indir (.zip)</a></strong> · <a href="https://github.com/yasx01/kinect-webcam/releases/tag/windows-v0.3.0">Sürüm notları</a> · <strong><a href="https://github.com/yasx01/kinect-webcam/releases/download/linux-v18-preview/KinectWebcam-v18-x86_64.AppImage">Linux paketini indir (.AppImage)</a></strong> · <a href="docs/LINUX.md">Linux rehberi</a></p>
+  <p><strong><a href="https://github.com/yasx01/kinect-webcam/releases/download/windows-v0.3.0/KinectWebcam-Windows-x64.zip">Windows paketini indir (.zip)</a></strong> · <a href="https://github.com/yasx01/kinect-webcam/releases/tag/windows-v0.3.0">Sürüm notları</a> · <strong><a href="https://github.com/yasx01/kinect-webcam/releases/download/linux-v19-native-preview/kinect-webcam-19.0.0-1.fc44.x86_64.rpm">Fedora (.rpm)</a></strong> · <strong><a href="https://github.com/yasx01/kinect-webcam/releases/download/linux-v19-native-preview/kinect-webcam_19.0.0-1_amd64.deb">Ubuntu (.deb)</a></strong> · <a href="https://github.com/yasx01/kinect-webcam/releases/download/linux-v18-preview/KinectWebcam-v18-x86_64.AppImage">AppImage</a> · <a href="docs/LINUX.md">Linux rehberi</a></p>
 </div>
 
 ---
@@ -19,7 +19,9 @@ Kinect Webcam, kamera ve mikrofon kontrollerini tek bir panelde toplar. Görünt
 | İşletim sistemi | Nereden başlamalı? |
 | --- | --- |
 | **Windows 10 (1809+) / 11** · 64 bit | [Windows paketini indir](https://github.com/yasx01/kinect-webcam/releases/download/windows-v0.3.0/KinectWebcam-Windows-x64.zip). Paket `.exe`, kurulum rehberi ve lisansları içerir. |
-| **Linux · Fedora KDE** · 64 bit | [AppImage dosyasını indir](https://github.com/yasx01/kinect-webcam/releases/download/linux-v18-preview/KinectWebcam-v18-x86_64.AppImage). İlk kurulum Fedora KDE için hazırlanmıştır. [Linux rehberi](docs/LINUX.md) |
+| **Fedora 44** · 64 bit | [RPM paketini indir](https://github.com/yasx01/kinect-webcam/releases/download/linux-v19-native-preview/kinect-webcam-19.0.0-1.fc44.x86_64.rpm). dnf ile kurulur. [Paket rehberi](docs/NATIVE_LINUX.md) |
+| **Ubuntu 24.04 / 26.04 LTS** · 64 bit | [DEB paketini indir](https://github.com/yasx01/kinect-webcam/releases/download/linux-v19-native-preview/kinect-webcam_19.0.0-1_amd64.deb). apt ile kurulur. [Paket rehberi](docs/NATIVE_LINUX.md) |
+| **Linux · AppImage / Fedora KDE** · 64 bit | [AppImage dosyasını indir](https://github.com/yasx01/kinect-webcam/releases/download/linux-v18-preview/KinectWebcam-v18-x86_64.AppImage). İlk kurulum Fedora KDE için hazırlanmıştır. [Linux rehberi](docs/LINUX.md) |
 
 ### Windows'ta ilk kullanım
 
@@ -32,6 +34,8 @@ Mikrofon sistemde görünmüyorsa kendi kullanım hakkına sahip olduğun UACFir
 > **Windows önizleme sürümü:** Otomatik testler ve `.exe` başlangıç kontrolü geçti. Gerçek Kinect ile fiziksel Windows 10 bilgisayarda ve görüşme uygulamalarında henüz test edilmedi.
 
 ### Linux'ta ilk kullanım
+
+**RPM / DEB tercih ediyorsan:** [dağıtıma özel rehberi](docs/NATIVE_LINUX.md) izle. Paket yöneticisi bağımlılıkları kurar; ardından uygulama menüsünden Kinect Webcam açılır. Aşağıdaki adımlar AppImage içindir.
 
 1. AppImage dosyasını indir. Dosya özelliklerinden **program olarak çalıştırma izni** ver ve aç.
 2. Fedora KDE'de **İlk Kurulum / Denetle** yönergelerini izle. Eksik sistem bileşenlerinin kurulması internet ve yönetici onayı gerektirebilir.
@@ -50,13 +54,16 @@ Mikrofon testi yalnızca sen başlattığında kayıt alır; geçici kayıt norm
 
 ## Geliştiriciler için
 
-- [Linux kurulumu, derleme ve test](docs/LINUX.md)
+- [Fedora RPM / Ubuntu DEB kurulumu ve derleme](docs/NATIVE_LINUX.md)
+- [Linux AppImage kurulumu, derleme ve test](docs/LINUX.md)
 - [Windows kurulumu ve derleme](windows/WINDOWS.md)
-- [Linux v18 sürüm notları](SURUM_v18.md) · [Windows sürüm notları](SURUM_WINDOWS_v03.md)
+- [Linux v19 yerel paket sürüm notları](SURUM_v19.md) · [AppImage v18 sürüm notları](SURUM_v18.md) · [Windows sürüm notları](SURUM_WINDOWS_v03.md)
 - [Windows derleme ve test çıktısı](https://github.com/yasx01/kinect-webcam/actions/runs/41834794927)
 
-Linux v18 için 121 otomatik test, Windows için 26 kaynak testi ve paket başlangıç denetimi çalıştırıldı. Bu kontroller gerçek donanım testinin yerini tutmaz.
+Linux v19 için 129 otomatik test, AppImage v18 için 121 test, Windows için 26 kaynak testi ve paket başlangıç denetimi çalıştırıldı. Bu kontroller gerçek donanım testinin yerini tutmaz.
 
 ## Lisans ve üçüncü taraflar
 
 Açık kaynak bileşenlerin bildirimleri kaynak klasörlerinde ve Windows ZIP paketinde yer alır. Microsoft Kinect firmware'i ve SDK/MSI bu depoda veya Windows paketinde bulunmaz. Windows USB sürücü kurulumu için gerekli libwdi/libusbK bileşenleri pakete dahildir. Projenin kendi kodu için henüz ayrı bir lisans seçilmemiştir.
+
+Microsoft Runtime için [ayrı resmi indirme/doğrulama başvurusu](optional-drivers/microsoft-runtime/README.md) bulunur. Orijinal Microsoft ikili dosyası lisansı gereği bu depoda yeniden yayımlanmaz.

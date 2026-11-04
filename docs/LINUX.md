@@ -1,4 +1,6 @@
-# Linux · Kinect Webcam v18
+# Linux · Kinect Webcam
+
+**Fedora RPM veya Ubuntu DEB için [yerel paket rehberini](NATIVE_LINUX.md) aç.** Bu sayfa AppImage v18 içindir.
 
 **[AppImage dosyasını indir](https://github.com/yasx01/kinect-webcam/releases/download/linux-v18-preview/KinectWebcam-v18-x86_64.AppImage)** · [Sürüm notları](../SURUM_v18.md)
 
