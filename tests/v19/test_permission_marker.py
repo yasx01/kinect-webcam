@@ -39,4 +39,15 @@ class MarkerTests(unittest.TestCase):
             self.assertEqual(permissions.pending_restart([]),[])
 
 
+class PortalIdentityTests(unittest.TestCase):
+    def test_snap_permission_calls_target_only_firefox_snap(self):
+        with patch.object(permissions.Path,'exists',return_value=True),patch.object(permissions.subprocess,'run') as run:
+            permissions.call('GetPermission')
+        self.assertEqual(run.call_args.args[0][-1],'snap.firefox')
+
+    def test_native_permission_calls_keep_mozilla_identity(self):
+        with patch.object(permissions.Path,'exists',return_value=False),patch.object(permissions.subprocess,'run') as run:
+            permissions.call('GetPermission')
+        self.assertEqual(run.call_args.args[0][-1],'org.mozilla.firefox')
+
 if __name__=='__main__':unittest.main()

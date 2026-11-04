@@ -2,7 +2,7 @@
 """Inspect Firefox's camera portal decision; offer separately consented repair methods.
 
 No profile/cache access or automatic grant. Browser restart is a separate explicit-consent fallback.
-Fedora Firefox RPM app ID: org.mozilla.firefox. No operation targets another app.
+Firefox RPM/Flatpak and Ubuntu Snap portal IDs only. No other application is targeted.
 """
 import argparse
 import ast
@@ -19,10 +19,15 @@ OBJECT = '/org/freedesktop/impl/portal/PermissionStore'
 APP_ID = 'org.mozilla.firefox'
 
 
+def portal_app_id():
+    # Ubuntu's default Firefox is Snap; RPM/Flatpak use the Mozilla application ID.
+    return 'snap.firefox' if Path('/snap/firefox/current').exists() else APP_ID
+
+
 def call(method):
     return subprocess.run(['/usr/bin/gdbus', 'call', '--session', '--dest', SERVICE,
                            '--object-path', OBJECT, '--method', SERVICE + '.' + method,
-                           'devices', 'camera', APP_ID], capture_output=True, text=True,
+                           'devices', 'camera', portal_app_id()], capture_output=True, text=True,
                           timeout=6, env=dict(os.environ, LC_ALL='C'))
 
 
