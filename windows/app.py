@@ -16,23 +16,41 @@ from PyQt6.QtWidgets import (QApplication,QMainWindow,QWidget,QVBoxLayout,QHBoxL
 
 class Setup(QDialog):
     def __init__(self,parent):
-        super().__init__(parent);self.setWindowTitle('İlk kurulum');self.resize(540,440)
+        super().__init__(parent);self.setWindowTitle('İlk kurulum');self.resize(560,540)
         layout=QVBoxLayout(self)
         heading=QLabel('Kinect’i Windows’a hazırla');heading.setStyleSheet('font-size:21px;font-weight:700');layout.addWidget(heading)
         for text in ['1. Kinect’in güç adaptörünü ve USB kablosunu bağla.',
-                     '2. Zadig ile yalnızca Xbox NUI Camera (045e:02ae/02bf) için libusbK kur. Başka aygıt seçme.',
+                     '2. Aşağıdaki Kamera sürücüsünü hazırla düğmesini kullan. Ek sürücü programı indirmen gerekmez; Windows yönetici onayı ister.',
                      '3. Tarayıcı çıkışı için OBS Studio’yu kur. OBS’nin kendi Sanal Kamerayı Başlat düğmesini aynı anda kullanma.',
-                     '4. Mikrofon görünmüyorsa kendi UACFirmware dosyanla ses hazırlığını yap. Ham ses aygıtı 045e:02ad için libusbK gerekebilir. Firmware sonrası 045e:02bb üzerinde Windows USB Audio sürücüsünü koru.']:
+                     '4. Mikrofon görünmüyorsa isteğe bağlı ses USB hazırlığını ve kendi UACFirmware dosyanla yüklemeyi kullan. Normal Kinect USB mikrofon sürücüsü değiştirilmez.']:
             label=QLabel(text);label.setWordWrap(True);layout.addWidget(label)
         row=QHBoxLayout();layout.addLayout(row)
-        for title,url in [('Zadig','https://zadig.akeo.ie/'),('OBS Studio','https://obsproject.com/download')]:
+        for title,url in [('OBS Studio','https://obsproject.com/download')]:
             button=QPushButton(title);button.clicked.connect(lambda _,u=url:QDesktopServices.openUrl(QUrl(u)));row.addWidget(button)
+        self.driver=QPushButton('Kamera sürücüsünü hazırla');self.driver.clicked.connect(lambda:self.install_driver('camera'));layout.addWidget(self.driver)
+        self.audio_driver=QPushButton('Mikrofon görünmüyorsa: ses USB erişimini hazırla');self.audio_driver.clicked.connect(lambda:self.install_driver('audio'));layout.addWidget(self.audio_driver)
         self.firmware=QPushButton('Yerel ses firmware’ini yükle…');self.firmware.clicked.connect(self.start_upload);layout.addWidget(self.firmware)
-        self.status=QLabel('Uygulama sürücüleri otomatik değiştirmez. Microsoft firmware’i bu pakette bulunmaz.');self.status.setWordWrap(True);layout.addWidget(self.status)
+        self.status=QLabel('Sürücü yalnızca onayınla değiştirilir. Microsoft firmware’i bu pakette bulunmaz.');self.status.setWordWrap(True);layout.addWidget(self.status)
         self.close_button=QPushButton('Kapat');self.close_button.clicked.connect(self.accept);layout.addWidget(self.close_button)
         self.process=QProcess(self);self.process.finished.connect(self.completed);self.process.errorOccurred.connect(self.error)
         self.timer=QTimer(self);self.timer.setSingleShot(True);self.timer.timeout.connect(self.timeout)
         self.result_temp=None
+
+    def set_busy(self,busy):
+        for button in (self.driver,self.audio_driver,self.firmware,self.close_button):button.setEnabled(not busy)
+
+    def install_driver(self,purpose):
+        if self.process.state()!=QProcess.ProcessState.NotRunning:return
+        if self.parent().worker.state()!=QProcess.ProcessState.NotRunning:
+            self.status.setText('Önce kamera akışını durdur.');return
+        description=('Yalnızca Kinect kamerasının (045e:02ae/02bf) sürücüsü libusbK olarak hazırlanacak. Kinect SDK kullanan başka uygulamalar etkilenebilir.' if purpose=='camera' else
+                     'Yalnızca ham Kinect ses aygıtının (045e:02ad) firmware yükleme erişimi hazırlanacak. Normal USB mikrofon (045e:02bb) sürücüsü değiştirilmez.')
+        if QMessageBox.question(self,'Kinect sürücüsünü hazırla',description+'\n\nWindows yönetici onayı isteyecek. Devam edilsin mi?',QMessageBox.StandardButton.Yes|QMessageBox.StandardButton.No,QMessageBox.StandardButton.No)!=QMessageBox.StandardButton.Yes:return
+        self.result_temp=tempfile.TemporaryDirectory(prefix='kinect-driver-result-')
+        command,args=child_command('--install-driver',purpose,'--result',str(Path(self.result_temp.name)/'result.json'))
+        self.set_busy(True);self.status.setText('Windows yönetici onayı bekleniyor; ardından Kinect sürücüsü hazırlanacak…')
+        # Do not kill an elevated driver installer while Windows is updating the device.
+        self.process.start(command,args)
 
     def start_upload(self):
         if self.parent().worker.state()!=QProcess.ProcessState.NotRunning:
@@ -46,14 +64,14 @@ class Setup(QDialog):
         self.result_temp=tempfile.TemporaryDirectory(prefix='kinect-fw-result-')
         command,args=child_command('--upload-firmware',path,'--result',str(Path(self.result_temp.name)/'result.json'))
         self.process.start(command,args);self.timer.start(65000)
-        self.firmware.setEnabled(False);self.close_button.setEnabled(False);self.status.setText('Ses hazırlanıyor…')
+        self.set_busy(True);self.status.setText('Ses hazırlanıyor…')
 
     def completed(self,code,status):
-        self.timer.stop();self.firmware.setEnabled(True);self.close_button.setEnabled(True)
+        self.timer.stop();self.set_busy(False)
         try:
             value=json.loads((Path(self.result_temp.name)/'result.json').read_text(encoding='utf-8'))
             self.status.setText(value['message'])
-        except (OSError,ValueError,TypeError,KeyError,AttributeError):self.status.setText('Ses hazırlığı tamamlanamadı. Kinect bağlantısını denetle.')
+        except (OSError,ValueError,TypeError,KeyError,AttributeError):self.status.setText('İşlem tamamlanamadı. Kinect bağlantısını ve kurulum durumunu denetle.')
         if self.result_temp:self.result_temp.cleanup();self.result_temp=None
         self.parent().refresh_mic()
 
@@ -79,7 +97,7 @@ def child_command(*args):
 
 class MainWindow(QMainWindow):
     def __init__(self):
-        super().__init__();self.setWindowTitle('Kinect Webcam · Windows v0.2.0');self.resize(760,720);self.setMinimumSize(720,640)
+        super().__init__();self.setWindowTitle('Kinect Webcam · Windows v0.3.0');self.resize(760,720);self.setMinimumSize(720,640)
         icon=resources()/'kinect-facecam-icon-v15.png'
         if not icon.is_file():icon=Path(__file__).resolve().parents[1]/'v15/kinect-facecam-icon-v15.png'
         self.setWindowIcon(QIcon(str(icon)))
@@ -236,11 +254,17 @@ class MainWindow(QMainWindow):
 
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--camera-worker');parser.add_argument('--virtual',action='store_true')
-    parser.add_argument('--upload-firmware');parser.add_argument('--result');parser.add_argument('--self-test');parser.add_argument('--test-worker')
+    parser.add_argument('--upload-firmware');parser.add_argument('--install-driver',choices=['camera','audio']);parser.add_argument('--result');parser.add_argument('--self-test');parser.add_argument('--test-worker')
     args=parser.parse_args()
     if args.camera_worker:
         from camera import run
         return run(args.camera_worker,args.virtual)
+    if args.install_driver:
+        from provision import install
+        try:message=install(args.install_driver);code=0
+        except Exception as exc:message=str(exc);code=1
+        if args.result:atomic_write(Path(args.result),json.dumps({'message':message},ensure_ascii=False).encode('utf-8'))
+        return code
     if args.upload_firmware:
         from firmware import upload
         try:message=upload(args.upload_firmware);code=0

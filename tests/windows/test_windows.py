@@ -11,7 +11,7 @@ import unittest
 from unittest.mock import Mock,patch
 os.environ['QT_QPA_PLATFORM']='offscreen'
 ROOT=Path(__file__).resolve().parents[2];sys.path.insert(0,str(ROOT/'windows'))
-import common,camera,firmware
+import common,camera,firmware,provision
 import app as gui
 import audio
 from PyQt6.QtCore import QProcess
@@ -81,6 +81,29 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(len(pcm),20);self.assertEqual(struct.unpack('<h',pcm[:2])[0],16384)
 
 
+class DriverTests(unittest.TestCase):
+    def test_invalid_action_never_elevates(self):
+        with patch.object(provision,'elevate') as elevate:
+            with self.assertRaises(ValueError):provision.install('all-usb-devices')
+        elevate.assert_not_called()
+
+    def test_missing_helper_never_elevates(self):
+        with tempfile.TemporaryDirectory() as folder,patch.object(provision.sys,'platform','win32'),patch.object(provision,'native_dir',return_value=Path(folder)),patch.object(provision,'elevate') as elevate:
+            with self.assertRaisesRegex(RuntimeError,'eksik'):provision.install('camera')
+        elevate.assert_not_called()
+
+    def test_only_fixed_helper_and_fixed_actions_are_elevated(self):
+        with tempfile.TemporaryDirectory() as folder,patch.object(provision.sys,'platform','win32'),patch.object(provision,'native_dir',return_value=Path(folder)),patch.object(provision,'elevate',return_value=0) as elevate:
+            helper=Path(folder)/'kinect-driver.exe';helper.touch()
+            self.assertIn('hazırlandı',provision.install('camera'))
+            elevate.assert_called_once_with(helper.resolve(),'camera')
+
+    def test_windows_policy_error_never_reports_success(self):
+        with tempfile.TemporaryDirectory() as folder,patch.object(provision.sys,'platform','win32'),patch.object(provision,'native_dir',return_value=Path(folder)),patch.object(provision,'elevate',return_value=119):
+            (Path(folder)/'kinect-driver.exe').touch()
+            with self.assertRaisesRegex(RuntimeError,'Koruma ayarlarını kapatmayın'):provision.install('audio')
+
+
 class GuiTests(unittest.TestCase):
     def setUp(self):
         mock=patch.object(gui,'microphone_endpoint',side_effect=RuntimeError('No Kinect'));mock.start();self.addCleanup(mock.stop)
@@ -117,6 +140,29 @@ class GuiTests(unittest.TestCase):
         with patch.object(self.window,'stop') as stop,patch.object(self.window,'start') as start:
             self.window.restart()
         stop.assert_called_once();start.assert_called_once()
+
+    def test_driver_install_requires_explicit_confirmation(self):
+        dialog=gui.Setup(self.window);self.addCleanup(dialog.reject)
+        with patch.object(gui.QMessageBox,'question',return_value=gui.QMessageBox.StandardButton.No),patch.object(dialog.process,'start') as start:
+            dialog.install_driver('camera')
+        start.assert_not_called()
+
+    def test_driver_install_is_separate_child_and_never_force_killed(self):
+        dialog=gui.Setup(self.window);self.addCleanup(dialog.reject)
+        with patch.object(gui.QMessageBox,'question',return_value=gui.QMessageBox.StandardButton.Yes),patch.object(dialog.process,'start') as start:
+            dialog.install_driver('audio')
+        command,args=start.call_args.args
+        self.assertIn('--install-driver',args);self.assertIn('audio',args)
+        self.assertFalse(dialog.timer.isActive())
+        self.assertFalse(dialog.close_button.isEnabled())
+        dialog.completed(1,QProcess.ExitStatus.NormalExit)
+        self.assertTrue(dialog.driver.isEnabled())
+
+    def test_running_camera_blocks_driver_changes(self):
+        dialog=gui.Setup(self.window);self.addCleanup(dialog.reject)
+        with patch.object(self.window.worker,'state',return_value=QProcess.ProcessState.Running),patch.object(gui.QMessageBox,'question') as question,patch.object(dialog.process,'start') as start:
+            dialog.install_driver('camera')
+        question.assert_not_called();start.assert_not_called()
 
     def test_stopped_stream_cannot_freeze_stale_image(self):
         self.window.pixmap=QPixmap(12,12)

@@ -1,7 +1,7 @@
 $ErrorActionPreference = 'Stop'
 Set-Location (Split-Path $PSScriptRoot -Parent)
 $Native = Join-Path $PSScriptRoot 'native'
-if (!(Test-Path "$Native/kinect_upload_fw.exe")) { throw 'Native build is missing.' }
+if (!(Test-Path "$Native/kinect_upload_fw.exe") -or !(Test-Path "$Native/kinect-driver.exe") -or !(Test-Path "$Native/libwdi.dll")) { throw 'Native build is missing.' }
 python -m unittest discover -s tests/windows -v
 if ($LASTEXITCODE -ne 0) { throw 'Windows tests failed.' }
 python -m PyInstaller --noconfirm --clean --onefile --windowed --name KinectWebcam-Windows-x64 --distpath dist --workpath build-tools/pyinstaller --specpath build-tools --paths windows --paths v15 --collect-all pyvirtualcam --collect-all pycaw --add-data "${Native};native" --add-data "${PSScriptRoot}/WINDOWS.md;docs" --add-data "$((Resolve-Path 'v15/kinect-facecam-icon-v15.png').Path);." windows/app.py

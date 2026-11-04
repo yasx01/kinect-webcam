@@ -47,6 +47,9 @@ def self_test(report):
                               capture_output=True,timeout=10,creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
         assert loader.returncode!=0 and b'Failed to open' in loader.stderr
         checks['native_loader_startup']=True
+        driver=subprocess.run([str(native_dir()/'kinect-driver.exe'),'--self-test'],capture_output=True,timeout=15,creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
+        assert driver.returncode==0,(driver.returncode,driver.stderr)
+        checks['bundled_driver_and_kinect_only_allowlist']=True
         from PyQt6.QtWidgets import QApplication
         from PyQt6.QtCore import QProcess
         from app import MainWindow,child_command

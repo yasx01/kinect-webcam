@@ -21,6 +21,11 @@ jobs:
           update: true
           install: >-
             git
+            autoconf
+            automake
+            libtool
+            make
+            curl
             mingw-w64-ucrt-x86_64-gcc
             mingw-w64-ucrt-x86_64-cmake
             mingw-w64-ucrt-x86_64-ninja
@@ -28,6 +33,9 @@ jobs:
       - name: Compile open-source camera libraries and firmware loader
         shell: msys2 {0}
         run: bash windows/build-native.sh
+      - name: Build integrated Kinect driver installer
+        shell: msys2 {0}
+        run: bash windows/build-driver.sh
       - name: Install isolated runner dependencies
         shell: pwsh
         run: |
