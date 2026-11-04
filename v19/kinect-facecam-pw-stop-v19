@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Signal only this user's identified Kinect bridge, using a Linux pidfd.
+set -euo pipefail
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+exec /usr/bin/python3 -I "$HERE/kinect_facecam_process_v19.py" stop "/tmp/kinect-facecam-pw.pid" pw

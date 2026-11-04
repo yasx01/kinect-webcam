@@ -1,0 +1,66 @@
+name: Linux native packages
+on:
+  workflow_dispatch:
+  push:
+    paths: ['v19/**', 'tests/v19/**', 'packaging/build-native-packages.py', 'packaging/native/**', '.github/workflows/linux-packages.yml']
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: fedora:44
+            format: rpm
+          - image: ubuntu:24.04
+            format: deb
+    container: ${{ matrix.image }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Prepare isolated build environment
+        shell: bash
+        run: |
+          if command -v dnf >/dev/null; then
+            dnf install -y gcc rpm-build pkgconf-pkg-config libusb1-devel python3 python3-pyqt6 python3-numpy python3-gobject dbus-daemon
+          else
+            apt-get update
+            DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends gcc pkg-config libusb-1.0-0-dev python3 python3-pyqt6 python3-numpy python3-gi dpkg-dev dbus-daemon
+          fi
+      - name: Build package
+        run: python3 -B packaging/build-native-packages.py ${{ matrix.format }}
+      - name: Install, inspect, launch and remove in the container
+        shell: bash
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: bash packaging/native/check-package.sh ${{ matrix.format }}
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: linux-native-${{ matrix.format }}
+          path: |
+            dist/*.${{ matrix.format }}
+            dist/*.${{ matrix.format }}.sha256
+            dist/*verification*.json
+          if-no-files-found: error
+  ubuntu26:
+    needs: build
+    runs-on: ubuntu-24.04
+    container: ubuntu:26.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: linux-native-deb
+          path: dist
+      - name: Check the same DEB on Ubuntu 26.04
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends python3-gi dbus-daemon
+          bash packaging/native/check-package.sh deb
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: linux-native-ubuntu26-check
+          path: dist/*verification*.json
