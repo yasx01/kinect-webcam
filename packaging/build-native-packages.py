@@ -71,6 +71,10 @@ def build(kind):
                 for path in sorted(payload.iterdir()):archive.add(path,arcname=path.name)
             spec=top/'SPECS/kinect-webcam.spec'
             spec.write_text(f'''%global debug_package %{{nil}}
+%global __brp_strip %{{nil}}
+%global __brp_strip_comment_note %{{nil}}
+%global __brp_strip_static_archive %{{nil}}
+%global __brp_strip_lto %{{nil}}
 %global __brp_python_bytecompile %{{nil}}
 Name: kinect-webcam
 Version: {VERSION}
