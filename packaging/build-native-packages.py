@@ -39,7 +39,7 @@ def stage(root):
             write(root,base+'/'+path.name,path.read_bytes(),0o644 if path.suffix=='.png' else 0o755)
     flags = subprocess.check_output(['pkg-config','--cflags','--libs','libusb-1.0'],text=True).split()
     loader = root/base/'payload/kinect_upload_fw';loader.parent.mkdir(parents=True)
-    subprocess.run(['cc','-O2','-Wall','-Wextra',str(src/'vendor/kinect-audio-setup/kinect_upload_fw.c'),'-o',str(loader),*flags],check=True)
+    subprocess.run(['cc','-O2','-s','-Wall','-Wextra',str(src/'vendor/kinect-audio-setup/kinect_upload_fw.c'),'-o',str(loader),*flags],check=True)
     write(root,base+'/payload/manifest.json',json.dumps({'kinect_upload_fw':hashlib.sha256(loader.read_bytes()).hexdigest()},indent=2)+'\n')
     for path in (src/'licenses').iterdir():write(root,'usr/share/doc/kinect-webcam/licenses/'+path.name,path.read_bytes())
     write(root,'usr/share/doc/kinect-webcam/copyright','Kinect Webcam project: https://github.com/yasx01/kinect-webcam\nProject license has not yet been declared.\nBundled kinect_upload_fw is BSD-2-Clause; see licenses/kinect_upload_fw-BSD-2-Clause.txt.\nSystem libraries are installed separately by the package manager.\n')

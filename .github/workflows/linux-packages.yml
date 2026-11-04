@@ -26,7 +26,7 @@ jobs:
             dnf install -y gcc rpm-build pkgconf-pkg-config libusb1-devel python3 python3-pyqt6 python3-numpy python3-gobject dbus-daemon
           else
             apt-get update
-            DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends gcc pkg-config libusb-1.0-0-dev python3 python3-pyqt6 python3-numpy python3-gi dpkg-dev dbus-daemon
+            DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends gcc libc6-dev pkg-config libusb-1.0-0-dev python3 python3-pyqt6 python3-numpy python3-gi dpkg-dev dbus-daemon
           fi
       - name: Build package
         run: python3 -B packaging/build-native-packages.py ${{ matrix.format }}
